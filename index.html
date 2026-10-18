@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Loft Coins V8</title>
+<style>
+:root{
+  --bg:#06130f;--panel:#0d2b24;--gold:#d8b15b;--gold2:#f6d987;--text:#f3f7f5;
+  --muted:#a9beb5;--line:#24564c;--table:#287b65;--bar:#755035;--slot:#7555b6;
+  --service:#4d5b61;--coin:#ffd05a;--ok:#84e0a8;--bad:#ffaaa6;--route:#57c7a4;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#05120e,#0a211b 55%,#071611);color:var(--text)}
+.wrap{max-width:1180px;margin:auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:15px}
+.brand{display:flex;gap:12px;align-items:center}.tl{width:54px;height:54px;border:2px solid var(--gold);border-radius:16px;display:flex;align-items:center;justify-content:center;color:var(--gold2);font-weight:900;font-size:24px}
+h1{margin:0;font-size:27px}.sub{color:var(--muted);font-size:13px;margin-top:3px}.badge{padding:9px 12px;border-radius:999px;border:1px solid rgba(216,177,91,.35);background:rgba(216,177,91,.09);color:var(--gold2);font-size:12px;font-weight:800}
+.grid{display:grid;grid-template-columns:350px 1fr;gap:16px}
+.card{background:linear-gradient(180deg,rgba(18,56,47,.96),rgba(9,30,25,.97));border:1px solid rgba(255,255,255,.06);border-radius:22px;padding:17px;box-shadow:0 16px 35px rgba(0,0,0,.22)}
+.card h2{margin:0 0 11px;color:var(--gold2);font-size:19px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}.stat{background:#081a16;border:1px solid #1f4a41;border-radius:15px;padding:11px}.stat small{display:block;color:var(--muted)}.stat b{font-size:20px;color:var(--gold2)}
+.note{font-size:12px;line-height:1.48;color:#d2ded9;background:rgba(255,255,255,.03);padding:10px 11px;border-radius:12px;border-left:3px solid var(--gold);margin-top:11px}
+button,select{border:0;border-radius:13px;padding:12px 13px;font-weight:800}
+select{width:100%;background:#081a16;color:#fff;border:1px solid var(--line);margin-top:6px}
+button{cursor:pointer}
+.primary{width:100%;margin-top:10px;background:linear-gradient(90deg,var(--gold),var(--gold2));color:#201a09}
+.secondary{width:100%;margin-top:9px;background:#163d34;color:#fff;border:1px solid var(--line)}
+.inline{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.inline button{background:#163d34;color:#fff;border:1px solid var(--line)}
+.status{font-size:12px;color:var(--muted);margin-top:8px}.ok{color:var(--ok)}.bad{color:var(--bad)}
+.bigstatus{margin-top:10px;padding:10px 12px;border-radius:12px;background:#0b201b;border:1px solid #24564c;font-weight:800;text-align:center;color:var(--gold2)}
+.mapcard{padding:13px}.maphead{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.legend{display:flex;gap:9px;flex-wrap:wrap;color:var(--muted);font-size:11px}.legend i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:4px}
+.map{position:relative;width:100%;aspect-ratio:8/9;background:
+repeating-linear-gradient(90deg,rgba(255,255,255,.025) 0 1px,transparent 1px 48px),
+repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 48px),
+linear-gradient(160deg,#0d2e26,#081a16);border:1px solid #17453b;border-radius:19px;overflow:hidden}
+.side{position:absolute;writing-mode:vertical-rl;transform:rotate(180deg);text-transform:uppercase;color:rgba(255,255,255,.22);font-weight:800;letter-spacing:1px}.cortile{left:8px;top:120px}.via{right:8px;top:130px}
+.zone{position:absolute;border-radius:14px;border:2px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-weight:800;text-align:center;padding:6px;user-select:none}
+.bar{background:rgba(117,80,53,.38);border-color:rgba(216,177,91,.35)}
+.table{background:rgba(40,123,101,.28);border-color:rgba(83,191,162,.32)}
+.slot{background:rgba(117,85,182,.25);border-style:dashed;border-color:rgba(171,138,229,.35)}
+.service{background:rgba(77,91,97,.22);border-color:rgba(164,176,181,.2);font-size:11px}
+.route-seg{position:absolute;height:4px;background:rgba(87,199,164,.35);transform-origin:0 50%;z-index:4;border-radius:4px}
+.avatar{position:absolute;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(#fff8d7,#d9b25c);color:#17352c;font-weight:900;border:2px solid #fff;z-index:9;box-shadow:0 0 0 6px rgba(216,177,91,.12),0 0 18px rgba(216,177,91,.38);transform:translate(-50%,-50%);transition:left .18s linear,top .18s linear}
+.coin{position:absolute;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 30%,#fff4be,#ffd05a 60%,#b07d08);color:#473200;font-size:11px;font-weight:900;border:2px solid #fff0a9;box-shadow:0 0 15px rgba(255,208,90,.52);z-index:8;transform:translate(-50%,-50%);animation:p 1.4s infinite}
+@keyframes p{50%{scale:1.08}}
+.mapfooter{margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.overlay{position:fixed;inset:0;background:rgba(2,8,6,.86);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.loginbox{width:min(430px,100%);background:#0c2a23;border:1px solid rgba(216,177,91,.3);border-radius:22px;padding:22px}
+.loginbox h2{color:var(--gold2);margin:0 0 8px}
+input{width:100%;padding:12px;border-radius:13px;border:1px solid var(--line);background:#081a16;color:#fff;margin-top:6px}
+label{display:block;color:var(--muted);font-size:12px;margin-top:9px}
+.debug{margin-top:11px;background:#081a16;border:1px solid #1f4a41;border-radius:14px;padding:10px;font-size:11px;color:#c3d4cd;line-height:1.5}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="loginOverlay">
+  <div class="loginbox">
+    <h2>Entra in The Loft Coins</h2>
+    <div class="sub">V8 · movimento affidabile basato sui passi</div>
+    <label>Nome e cognome</label>
+    <input id="loginName" placeholder="Es. Giuseppe Siracusano">
+    <label>Numero tessera</label>
+    <input id="loginCard" placeholder="Es. TL-000123">
+    <button class="primary" id="enterBtn">ENTRA NELLA DEMO</button>
+    <button class="secondary" id="demoBtn">USA CLIENTE DEMO</button>
+  </div>
+</div>
+
+<div class="wrap">
+<header>
+  <div class="brand">
+    <div class="tl">TL</div>
+    <div><h1>THE LOFT COINS – V8 · PERCORSI CORRETTI · STOP</h1><div class="sub">Movimento V8 invariato · percorso solo nei corridoi consentiti</div></div>
+  </div>
+  <div class="badge">1 moneta = 1 punto</div>
+</header>
+
+<div class="grid">
+  <section class="card">
+    <h2>1. Punto di partenza</h2>
+    <select id="startSelect">
+      <option value="ingresso">Ingresso / fondo</option>
+      <option value="bar">Bancone Bar</option>
+      <option value="b4">Biliardo 4</option>
+      <option value="b5">Biliardo 5</option>
+      <option value="b3">Biliardo 3</option>
+      <option value="b2">Biliardo 2</option>
+      <option value="b1">Biliardo 1</option>
+      <option value="slot">Zona Slot</option>
+      <option value="tavolini">Zona tavolini</option>
+      <option value="centrale">Passaggio centrale</option>
+    </select>
+    <button class="primary" id="setStartBtn">POSIZIONA QUI L'OMINO</button>
+
+    <h2 style="margin-top:18px">2. Movimento reale</h2>
+    <button class="primary" id="motionBtn">ATTIVA SENSORI</button>
+    <button class="secondary" id="calBtn">CALIBRA CON 10 PASSI</button>
+    <div class="inline">
+      <button id="testStepBtn">SIMULA 1 PASSO</button>
+      <button id="newCoinBtn">NUOVA MONETA</button>
+    </div>
+
+    <div class="bigstatus" id="modeStatus">Scegli dove ti trovi</div>
+    <div class="status" id="motionStatus">Sensori non attivi.</div>
+    <div class="status" id="calStatus">Calibrazione non eseguita.</div>
+
+    <div class="stats" style="margin-top:12px">
+      <div class="stat"><small>Punti</small><b id="pointsOut">0</b></div>
+      <div class="stat"><small>Passi</small><b id="stepsOut">0</b></div>
+      <div class="stat"><small>Da</small><b id="fromOut" style="font-size:14px">-</b></div>
+      <div class="stat"><small>Verso</small><b id="toOut" style="font-size:14px">-</b></div>
+    </div>
+
+    <div class="note">
+      Ho tolto la parte che ti bloccava vicino al biliardo 3. Ora l'omino segue una
+      <strong>strada prestabilita sulla mappa</strong>: ogni passo reale lo fa avanzare davvero verso la moneta.
+    </div>
+
+    <div class="note">
+      <strong>Correzione STOP:</strong> ho eliminato il trascinamento da fermo.
+      Un passo viene contato solo dopo un picco netto del sensore e una breve fase di quiete.
+    </div>
+
+    <div class="note">
+      <strong>Percorsi corretti:</strong> l'omino ora può avanzare solo nei corridoi impostati sulla mappa.
+      Il percorso non deve più tagliare biliardi, Zona Slot o il blocco WC / Anti WC / Ripostiglio.
+    </div>
+
+    <div class="note">
+      Questa V8 è più affidabile per la demo perché non dipende dalla bussola interna del telefono.
+      Nella versione finale, per verificare che il cliente sia arrivato davvero nella zona giusta, useremo
+      un <strong>QR checkpoint</strong> in quella zona.
+    </div>
+
+    <div class="debug">
+      Sensibilità: <span id="thrOut">10.7</span><br>
+      Accelerazione: <span id="magOut">0.0</span><br>
+      Progresso percorso: <span id="progressOut">0%</span>
+    </div>
+
+    <button class="secondary" id="logoutBtn">ESCI DALLA DEMO</button>
+  </section>
+
+  <section class="card mapcard">
+    <div class="maphead">
+      <h2 style="margin:0">Mappa The Loft</h2>
+      <div class="legend">
+        <span><i style="background:var(--bar)"></i>Bar</span>
+        <span><i style="background:var(--table)"></i>Biliardi</span>
+        <span><i style="background:var(--slot)"></i>Slot</span>
+        <span><i style="background:var(--coin);border-radius:50%"></i>Coin</span>
+      </div>
+    </div>
+
+    <div class="map" id="map">
+      <div class="side cortile">Cortile</div>
+      <div class="side via">Via Oddo delle Colonne</div>
+
+      <div class="zone bar" style="left:38%;top:6%;width:24%;height:10%">Bancone Bar</div>
+      <div class="zone table" style="left:12%;top:18%;width:18%;height:16%">Biliardo 4</div>
+      <div class="zone table" style="left:12%;top:42%;width:18%;height:18%">Biliardo 5</div>
+      <div class="zone table" style="left:70%;top:18%;width:18%;height:16%">Biliardo 3</div>
+      <div class="zone table" style="left:68%;top:56%;width:18%;height:18%">Biliardo 2</div>
+      <div class="zone table" style="left:68%;top:76%;width:18%;height:15%">Biliardo 1</div>
+      <div class="zone slot" style="left:41%;top:34%;width:18%;height:18%">Zona Slot</div>
+      <div class="zone service" style="left:39%;top:56%;width:22%;height:19%">WC / Anti WC / Ripostiglio<br>(NO COIN)</div>
+
+      <div id="routeLayer"></div>
+      <div class="avatar" id="avatar">☺</div>
+      <div class="coin" id="coin">TL</div>
+    </div>
+
+    <div class="mapfooter">
+      <div id="coinStatus">Moneta pronta.</div>
+      <div id="walkStatus">Modalità: attesa</div>
+    </div>
+  </section>
+</div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  /*
+    RETE DI PERCORSI CONSENTITI
+    ---------------------------
+    I nodi r_* sono waypoint invisibili nei corridoi reali.
+    Nessun collegamento attraversa:
+    - biliardi
+    - Zona Slot
+    - WC / Anti WC / Ripostiglio
+    - Bancone Bar
+
+    Le destinazioni (b1...b5, bar, slot, ecc.) sono poste sul bordo
+    accessibile della rispettiva zona, non nel centro dell'ostacolo.
+  */
+  const P = {
+    // Destinazioni giocabili
+    ingresso:{x:64,y:94,name:'Ingresso / fondo'},
+    b1:{x:66,y:84,name:'Biliardo 1'},
+    b2:{x:66,y:65,name:'Biliardo 2'},
+    b3:{x:68,y:28,name:'Biliardo 3'},
+    bar:{x:50,y:20,name:'Bancone Bar'},
+    centrale:{x:34,y:37,name:'Passaggio centrale'},
+    b4:{x:32,y:28,name:'Biliardo 4'},
+    slot:{x:62,y:43,name:'Zona Slot'},
+    b5:{x:32,y:51,name:'Biliardo 5'},
+    tavolini:{x:27,y:70,name:'Zona tavolini'},
+
+    // Waypoint invisibili: anello di corridoi intorno agli ostacoli
+    r_ul:{x:34,y:29,name:'Corridoio alto sinistra'},
+    r_ut:{x:50,y:29,name:'Corridoio alto centrale'},
+    r_ur:{x:64,y:29,name:'Corridoio alto destra'},
+
+    r_l1:{x:34,y:43,name:'Corridoio sinistro alto'},
+    r_l2:{x:34,y:63,name:'Corridoio sinistro centrale'},
+    r_l3:{x:34,y:82,name:'Corridoio sinistro basso'},
+    r_lb:{x:34,y:94,name:'Corridoio fondo sinistra'},
+
+    r_r1:{x:64,y:43,name:'Corridoio destro alto'},
+    r_r2:{x:64,y:63,name:'Corridoio destro centrale'},
+    r_r3:{x:64,y:82,name:'Corridoio destro basso'},
+    r_rb:{x:64,y:94,name:'Corridoio fondo destra'}
+  };
+
+  const adjacency = {
+    // anello superiore
+    r_ul:['r_ut','r_l1','b4','centrale'],
+    r_ut:['r_ul','r_ur','bar'],
+    r_ur:['r_ut','r_r1','b3'],
+
+    // corridoio sinistro
+    r_l1:['r_ul','r_l2','centrale','b5'],
+    r_l2:['r_l1','r_l3','b5','tavolini'],
+    r_l3:['r_l2','r_lb','tavolini'],
+    r_lb:['r_l3','r_rb'],
+
+    // corridoio destro
+    r_r1:['r_ur','r_r2','slot'],
+    r_r2:['r_r1','r_r3','b2'],
+    r_r3:['r_r2','r_rb','b1'],
+    r_rb:['r_r3','r_lb','ingresso'],
+
+    // destinazioni: ognuna si aggancia al corridoio più vicino
+    ingresso:['r_rb'],
+    b1:['r_r3'],
+    b2:['r_r2'],
+    b3:['r_ur'],
+    bar:['r_ut'],
+    centrale:['r_ul','r_l1'],
+    b4:['r_ul'],
+    slot:['r_r1'],
+    b5:['r_l1','r_l2'],
+    tavolini:['r_l2','r_l3']
+  };
+
+  const selectable = ['ingresso','bar','b4','b5','b3','b2','b1','slot','tavolini','centrale'];
+
+  let state = {
+    name:'',
+    card:'',
+    points:0,
+    steps:0,
+    stepArmed:true,
+    quietSince:0,
+    currentKey:'ingresso',
+    targetKey:'bar',
+    route:[],
+    routeIndex:0,
+    segmentProgress:0,
+    pos:{x:P.ingresso.x,y:P.ingresso.y},
+    threshold:10.7,
+    lastStep:0,
+    lastMag:0,
+    mag:0,
+    sensors:false,
+    calibrating:false,
+    calibrated:false,
+    calPeaks:[],
+    calSteps:0
+  };
+
+  function shortestPath(start,end){
+    const q=[[start]], seen=new Set([start]);
+    while(q.length){
+      const path=q.shift(), last=path[path.length-1];
+      if(last===end) return path;
+      for(const n of adjacency[last]||[]){
+        if(!seen.has(n)){seen.add(n);q.push([...path,n])}
+      }
+    }
+    return [start,end];
+  }
+
+  function newTarget(){
+    const candidates=selectable.filter(k=>k!==state.currentKey);
+    state.targetKey=candidates[Math.floor(Math.random()*candidates.length)];
+    state.route=shortestPath(state.currentKey,state.targetKey);
+    state.routeIndex=0;
+    state.segmentProgress=0;
+    state.pos={x:P[state.currentKey].x,y:P[state.currentKey].y};
+    drawRoute();
+    render();
+  }
+
+  function drawRoute(){
+    const layer=$('routeLayer');
+    layer.innerHTML='';
+    for(let i=0;i<state.route.length-1;i++){
+      const a=P[state.route[i]], b=P[state.route[i+1]];
+      const dx=b.x-a.x, dy=b.y-a.y;
+      const len=Math.hypot(dx,dy);
+      const angle=Math.atan2(dy,dx)*180/Math.PI;
+      const seg=document.createElement('div');
+      seg.className='route-seg';
+      seg.style.left=a.x+'%';
+      seg.style.top=a.y+'%';
+      seg.style.width=len+'%';
+      seg.style.transform=`rotate(${angle}deg)`;
+      layer.appendChild(seg);
+    }
+  }
+
+  function render(){
+    $('pointsOut').textContent=state.points;
+    $('stepsOut').textContent=state.steps;
+    $('fromOut').textContent=P[state.currentKey].name;
+    $('toOut').textContent=P[state.targetKey].name;
+    $('thrOut').textContent=state.threshold.toFixed(2);
+    $('magOut').textContent=state.mag.toFixed(2);
+    $('avatar').style.left=state.pos.x+'%';
+    $('avatar').style.top=state.pos.y+'%';
+    $('coin').style.left=P[state.targetKey].x+'%';
+    $('coin').style.top=P[state.targetKey].y+'%';
+    $('coinStatus').textContent='Moneta attiva: '+P[state.targetKey].name;
+
+    const totalSeg=Math.max(1,state.route.length-1);
+    const pct=Math.min(100,Math.round(((state.routeIndex+state.segmentProgress)/totalSeg)*100));
+    $('progressOut').textContent=pct+'%';
+
+    if(state.calibrating) $('modeStatus').textContent='CALIBRAZIONE '+state.calSteps+'/10 — L’OMINO AVANZA';
+    else if(state.calibrated) $('modeStatus').textContent='GIOCO ATTIVO — CAMMINA VERSO '+P[state.targetKey].name.toUpperCase();
+    else if(state.sensors) $('modeStatus').textContent='SENSORI ATTIVI — ORA CALIBRA';
+    else $('modeStatus').textContent='Partenza: '+P[state.currentKey].name;
+  }
+
+  function moveOneStep(){
+    if(state.routeIndex>=state.route.length-1) return;
+
+    const a=P[state.route[state.routeIndex]];
+    const b=P[state.route[state.routeIndex+1]];
+    const segLen=Math.hypot(b.x-a.x,b.y-a.y);
+
+    // circa 8-14 passi per tratta, in base alla lunghezza
+    const stepFraction=Math.min(0.18, Math.max(0.075, 2.2/segLen));
+    state.segmentProgress += stepFraction;
+    state.steps++;
+
+    if(state.segmentProgress>=1){
+      state.routeIndex++;
+      state.segmentProgress=0;
+      state.pos={x:b.x,y:b.y};
+
+      if(state.routeIndex>=state.route.length-1){
+        state.currentKey=state.targetKey;
+        state.points+=1;
+        $('walkStatus').textContent='Moneta raccolta! +1 punto';
+        setTimeout(newTarget,2500);
+      }
+    }else{
+      const t=state.segmentProgress;
+      state.pos={
+        x:a.x+(b.x-a.x)*t,
+        y:a.y+(b.y-a.y)*t
+      };
+      $('walkStatus').textContent='Modalità: cammino reale';
+    }
+    render();
+  }
+
+  function finishCalibration(){
+    state.calibrating=false;
+    state.calibrated=true;
+    if(state.calPeaks.length){
+      const avg=state.calPeaks.reduce((a,b)=>a+b,0)/state.calPeaks.length;
+      state.threshold=Math.max(10.45,avg*0.88);
+    }
+    $('calStatus').innerHTML="<span class='ok'>Calibrazione completata.</span> Il filtro anti-movimento è attivo: da fermo l'omino resta fermo.";
+    render();
+  }
+
+  function detectStep(mag){
+    const now=Date.now();
+
+    /*
+      Anti-drift:
+      - un nuovo passo può essere contato solo dopo che il telefono
+        è tornato in una fase "quieta";
+      - serve un picco netto, non il semplice rumore del sensore;
+      - minimo 420 ms tra due passi.
+    */
+    const QUIET_LEVEL = 0.35;
+    const STEP_LEVEL  = 1.05;
+
+    if(mag < QUIET_LEVEL){
+      if(!state.quietSince) state.quietSince = now;
+      if(now - state.quietSince > 120) state.stepArmed = true;
+    }else{
+      state.quietSince = 0;
+    }
+
+    if(state.stepArmed && mag > STEP_LEVEL && now-state.lastStep>420){
+      state.stepArmed=false;
+      state.lastStep=now;
+      moveOneStep();
+
+      if(state.calibrating){
+        state.calPeaks.push(mag);
+        state.calSteps++;
+        $('calStatus').textContent='Calibrazione: '+state.calSteps+'/10';
+        if(state.calSteps>=10) finishCalibration();
+      }
+    }
+
+    state.lastMag=mag;
+  }
+
+  function handleMotion(e){
+    /*
+      Preferiamo acceleration (senza gravità).
+      accelerationIncludingGravity resta solo come fallback.
+      Questo evita che piccole oscillazioni da fermo vengano scambiate per passi.
+    */
+    let mag=0;
+
+    if(e.acceleration &&
+       e.acceleration.x != null &&
+       e.acceleration.y != null &&
+       e.acceleration.z != null){
+      const a=e.acceleration;
+      mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+    }else{
+      const a=e.accelerationIncludingGravity;
+      if(!a) return;
+      const raw=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+      mag=Math.abs(raw-9.81);
+    }
+
+    state.mag=mag;
+    detectStep(mag);
+    render();
+  }
+
+  async function enableSensors(){
+    try{
+      if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+        if(await DeviceMotionEvent.requestPermission()!=='granted') throw new Error('permesso movimento negato');
+      }
+      window.addEventListener('devicemotion',handleMotion,true);
+      state.sensors=true;
+      $('motionStatus').innerHTML='<span class="ok">Sensori attivi.</span>';
+      $('motionBtn').disabled=true;
+      $('motionBtn').textContent='SENSORI ATTIVI';
+      render();
+    }catch(err){
+      $('motionStatus').innerHTML='<span class="bad">'+err.message+'</span>';
+    }
+  }
+
+  function startCalibration(){
+    if(!state.sensors){
+      $('calStatus').innerHTML='<span class="bad">Prima attiva i sensori.</span>';
+      return;
+    }
+    state.calibrating=true;
+    state.calibrated=false;
+    state.calPeaks=[];
+    state.calSteps=0;
+    $('calStatus').textContent='Fai 10 passi normali.';
+    render();
+  }
+
+  $('setStartBtn').addEventListener('click',()=>{
+    state.currentKey=$('startSelect').value;
+    state.pos={x:P[state.currentKey].x,y:P[state.currentKey].y};
+    state.steps=0;
+    newTarget();
+  });
+
+  $('motionBtn').addEventListener('click',enableSensors);
+  $('calBtn').addEventListener('click',startCalibration);
+  $('testStepBtn').addEventListener('click',moveOneStep);
+  $('newCoinBtn').addEventListener('click',newTarget);
+
+  $('enterBtn').addEventListener('click',()=>{
+    const n=$('loginName').value.trim(),c=$('loginCard').value.trim();
+    if(!n||!c){alert('Inserisci nome e numero tessera');return}
+    state.name=n;state.card=c;
+    $('loginOverlay').style.display='none';
+  });
+
+  $('demoBtn').addEventListener('click',()=>{
+    state.name='Cliente Demo';state.card='TL-'+Math.floor(1000+Math.random()*9000);
+    $('loginOverlay').style.display='none';
+  });
+
+  $('logoutBtn').addEventListener('click',()=>{$('loginOverlay').style.display='flex'});
+
+  newTarget();
+})();
+</script>
+</body>
+</html>
